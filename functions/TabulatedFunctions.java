@@ -1,7 +1,9 @@
 package functions;
 
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Locale;
 
 /**
  * Утилитарный класс для работы с табулированными функциями
@@ -158,6 +160,143 @@ public class TabulatedFunctions {
         }
         
         return createTabulatedFunction(functionClass, xValues, yValues);
+    }
+    
+    // === Методы чтения/записи (бинарные) ===
+    
+    /**
+     * Запись табулированной функции в бинарный поток
+     */
+    public static void outputTabulatedFunction(TabulatedFunction function, OutputStream out) throws IOException {
+        try (DataOutputStream dos = new DataOutputStream(out)) {
+            dos.writeInt(function.getPointCount());
+            
+            for (int i = 0; i < function.getPointCount(); i++) {
+                FunctionPoint point = function.getPoint(i);
+                dos.writeDouble(point.getX());
+                dos.writeDouble(point.getY());
+            }
+        }
+    }
+    
+    /**
+     * Чтение табулированной функции из бинарного потока (через текущую фабрику)
+     */
+    public static TabulatedFunction inputTabulatedFunction(InputStream in) throws IOException {
+        try (DataInputStream dis = new DataInputStream(in)) {
+            int pointCount = dis.readInt();
+            double[] xValues = new double[pointCount];
+            double[] yValues = new double[pointCount];
+            
+            for (int i = 0; i < pointCount; i++) {
+                xValues[i] = dis.readDouble();
+                yValues[i] = dis.readDouble();
+            }
+            
+            return createTabulatedFunction(xValues, yValues);
+        }
+    }
+    
+    /**
+     * Чтение табулированной функции из бинарного потока (через рефлексию)
+     */
+    public static TabulatedFunction inputTabulatedFunction(
+            Class<? extends TabulatedFunction> functionClass, InputStream in) throws IOException {
+        try (DataInputStream dis = new DataInputStream(in)) {
+            int pointCount = dis.readInt();
+            double[] xValues = new double[pointCount];
+            double[] yValues = new double[pointCount];
+            
+            for (int i = 0; i < pointCount; i++) {
+                xValues[i] = dis.readDouble();
+                yValues[i] = dis.readDouble();
+            }
+            
+            return createTabulatedFunction(functionClass, xValues, yValues);
+        }
+    }
+    
+    // === Методы чтения/записи (текстовые) ===
+    
+    /**
+     * Запись табулированной функции в текстовый поток
+     */
+    public static void writeTabulatedFunction(TabulatedFunction function, Writer out) throws IOException {
+        try (PrintWriter writer = new PrintWriter(out)) {
+            writer.println(function.getPointCount());
+            
+            for (int i = 0; i < function.getPointCount(); i++) {
+                FunctionPoint point = function.getPoint(i);
+                writer.printf(Locale.US, "%.10f %.10f%n", point.getX(), point.getY());
+            }
+        }
+    }
+    
+    /**
+     * Чтение табулированной функции из текстового потока (через текущую фабрику)
+     */
+    public static TabulatedFunction readTabulatedFunction(Reader in) throws IOException {
+        try (BufferedReader reader = new BufferedReader(in)) {
+            String line = reader.readLine();
+            if (line == null) {
+                throw new IOException("Unexpected end of stream");
+            }
+            
+            int pointCount = Integer.parseInt(line.trim());
+            double[] xValues = new double[pointCount];
+            double[] yValues = new double[pointCount];
+            
+            for (int i = 0; i < pointCount; i++) {
+                line = reader.readLine();
+                if (line == null) {
+                    throw new IOException("Unexpected end of stream");
+                }
+                
+                String[] parts = line.trim().split("\\s+");
+                if (parts.length < 2) {
+                    throw new IOException("Invalid format: expected two numbers per line");
+                }
+                
+                xValues[i] = Double.parseDouble(parts[0]);
+                yValues[i] = Double.parseDouble(parts[1]);
+            }
+            
+            return createTabulatedFunction(xValues, yValues);
+        }
+    }
+    
+    /**
+     * Чтение табулированной функции из текстового потока (через рефлексию)
+     */
+    public static TabulatedFunction readTabulatedFunction(
+            Class<? extends TabulatedFunction> functionClass, Reader in) throws IOException {
+        try (BufferedReader reader = new BufferedReader(in)) {
+            String line = reader.readLine();
+            if (line == null) {
+                throw new IOException("Unexpected end of stream");
+            }
+            
+            int pointCount = Integer.parseInt(line.trim());
+            double[] xValues = new double[pointCount];
+            double[] yValues = new double[pointCount];
+            
+            for (int i = 0; i < pointCount; i++) {
+                line = reader.readLine();
+                if (line == null) {
+                    throw new IOException("Unexpected end of stream");
+                }
+                
+                String[] parts = line.trim().split("\\s+");
+                if (parts.length < 2) {
+                    throw new IOException("Invalid format: expected two numbers per line");
+                }
+                
+                xValues[i] = Double.parseDouble(parts[0]);
+                yValues[i] = Double.parseDouble(parts[1]);
+            }
+            
+            return createTabulatedFunction(functionClass, xValues, yValues);
+        }
     }
     
     // === Дополнительные методы ===
