@@ -234,69 +234,71 @@ public class TabulatedFunctions {
     
     /**
      * Чтение табулированной функции из текстового потока (через текущую фабрику)
+     * Использует StreamTokenizer
      */
     public static TabulatedFunction readTabulatedFunction(Reader in) throws IOException {
-        try (BufferedReader reader = new BufferedReader(in)) {
-            String line = reader.readLine();
-            if (line == null) {
-                throw new IOException("Unexpected end of stream");
-            }
-            
-            int pointCount = Integer.parseInt(line.trim());
-            double[] xValues = new double[pointCount];
-            double[] yValues = new double[pointCount];
-            
-            for (int i = 0; i < pointCount; i++) {
-                line = reader.readLine();
-                if (line == null) {
-                    throw new IOException("Unexpected end of stream");
-                }
-                
-                String[] parts = line.trim().split("\\s+");
-                if (parts.length < 2) {
-                    throw new IOException("Invalid format: expected two numbers per line");
-                }
-                
-                xValues[i] = Double.parseDouble(parts[0]);
-                yValues[i] = Double.parseDouble(parts[1]);
-            }
-            
-            return createTabulatedFunction(xValues, yValues);
+        StreamTokenizer tokenizer = new StreamTokenizer(in);
+        
+        // Читаем количество точек
+        if (tokenizer.nextToken() != StreamTokenizer.TT_NUMBER) {
+            throw new IOException("Expected number of points");
         }
+        int pointCount = (int) tokenizer.nval;
+        
+        double[] xValues = new double[pointCount];
+        double[] yValues = new double[pointCount];
+        
+        // Читаем точки
+        for (int i = 0; i < pointCount; i++) {
+            // Читаем x
+            if (tokenizer.nextToken() != StreamTokenizer.TT_NUMBER) {
+                throw new IOException("Expected x value at point " + i);
+            }
+            xValues[i] = tokenizer.nval;
+            
+            // Читаем y
+            if (tokenizer.nextToken() != StreamTokenizer.TT_NUMBER) {
+                throw new IOException("Expected y value at point " + i);
+            }
+            yValues[i] = tokenizer.nval;
+        }
+        
+        return createTabulatedFunction(xValues, yValues);
     }
     
     /**
      * Чтение табулированной функции из текстового потока (через рефлексию)
+     * Использует StreamTokenizer
      */
     public static TabulatedFunction readTabulatedFunction(
             Class<? extends TabulatedFunction> functionClass, Reader in) throws IOException {
-        try (BufferedReader reader = new BufferedReader(in)) {
-            String line = reader.readLine();
-            if (line == null) {
-                throw new IOException("Unexpected end of stream");
-            }
-            
-            int pointCount = Integer.parseInt(line.trim());
-            double[] xValues = new double[pointCount];
-            double[] yValues = new double[pointCount];
-            
-            for (int i = 0; i < pointCount; i++) {
-                line = reader.readLine();
-                if (line == null) {
-                    throw new IOException("Unexpected end of stream");
-                }
-                
-                String[] parts = line.trim().split("\\s+");
-                if (parts.length < 2) {
-                    throw new IOException("Invalid format: expected two numbers per line");
-                }
-                
-                xValues[i] = Double.parseDouble(parts[0]);
-                yValues[i] = Double.parseDouble(parts[1]);
-            }
-            
-            return createTabulatedFunction(functionClass, xValues, yValues);
+        StreamTokenizer tokenizer = new StreamTokenizer(in);
+        
+        // Читаем количество точек
+        if (tokenizer.nextToken() != StreamTokenizer.TT_NUMBER) {
+            throw new IOException("Expected number of points");
         }
+        int pointCount = (int) tokenizer.nval;
+        
+        double[] xValues = new double[pointCount];
+        double[] yValues = new double[pointCount];
+        
+        // Читаем точки
+        for (int i = 0; i < pointCount; i++) {
+            // Читаем x
+            if (tokenizer.nextToken() != StreamTokenizer.TT_NUMBER) {
+                throw new IOException("Expected x value at point " + i);
+            }
+            xValues[i] = tokenizer.nval;
+            
+            // Читаем y
+            if (tokenizer.nextToken() != StreamTokenizer.TT_NUMBER) {
+                throw new IOException("Expected y value at point " + i);
+            }
+            yValues[i] = tokenizer.nval;
+        }
+        
+        return createTabulatedFunction(functionClass, xValues, yValues);
     }
     
     // === Дополнительные методы ===
